@@ -52,7 +52,7 @@ async function getCall() {
     browser = await puppeteer.launch({ headless: false });
     const page = await browser.newPage();
 
-    await page.setViewport({ width: 1080, height: 1024 });
+    await page.setViewport({ width: 1520, height: 1080 });
     await page.goto("https://synergy.servicetec.in");
 
     await page.waitForSelector("form");
@@ -90,24 +90,49 @@ async function getCall() {
       console.log("Login button is disabled.");
     }
 
-     await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    await page.waitForNavigation({ waitUntil: "networkidle0" });
+
+    await page.goto("https://synergy.servicetec.in/#/manage-booking/create");
+
+    await page.waitForSelector("#mat-input-7");
+
+    const modelSerialNoInput = await page.$("#mat-input-7");
+
+    if (modelSerialNoInput) {
+      await modelSerialNoInput.type("VBY7FT001046");
+      console.log("Typed into the Model Serial No. field.");
+    } else {
+      console.log("Model Serial No. input element not found");
+    }
+
+    const searchButtonSelector = "button.icon-Search-Lookup";
+
+    await page.waitForSelector(searchButtonSelector);
+
+    const searchButton = await page.$(searchButtonSelector);
+    if (searchButton) {
+      await searchButton.click();  
+      console.log("Clicked the search button.");
+    } else {
+      console.log("Search button not found.");
+    }
+    await page.waitForSelector("#date-picker-Purchase Date");
     
-
-    await page.goto("https://synergy.servicetec.in/#/manage-booking/create")
-
-
-    const context=await page.content()
-    console.log(context)
-
+    await page.evaluate(() => {
+      document.querySelector("#date-picker-Purchase Date").value = "25/07/2020";
+      const inputEvent = new Event("input", { bubbles: true });
+      document
+        .querySelector("#date-picker-Purchase Date")
+        .dispatchEvent(inputEvent);
+    });
   } catch (error) {
     console.error("Error in Puppeteer automation:", error);
   } finally {
     if (browser) {
-      await browser.newPage()
+      await browser.emit();
     }
   }
 }
-
 getCall();
 
 process.on("SIGINT", async () => {
